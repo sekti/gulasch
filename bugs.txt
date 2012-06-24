@@ -1,10 +1,15 @@
 Bugs:
--Kisten fallen durch falsche Portale
--Von Kiste an die Wand drücken, Spieler rutsch nur sehr langsam.
 
 Probleme:
+-Von Kiste an die Wand drücken, Spieler rutsch nur sehr langsam.
 -Mangelnde Kontrolle beim runterlaufen von Kante (Geschwindigkeit zu groß)
 -Flackern der Wand (Wand relativ zu Hintergrund verschiebt sich)
+
+Spielobjekte
+-Wasser
+-Laser (Spieler töten, Kisten zerstören)
+-Buttons
+-
 
 Features die toll wären:
 -Toolbox zum Auswählen zum Objekten, die gesetzt werden soll
