@@ -75,6 +75,9 @@ function export(filename)
 end
 
 function import(filename)
+    -- Destroy decoration
+    deco = {}
+
     local f = io.open(filename, "r")
     
     if not f then

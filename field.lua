@@ -65,7 +65,7 @@ function drawTileInCell(cellx,celly,xmin,ymin,xmax,ymax,img,downdir,rightdir,bri
     angle = angle * math.pi / 2;
     
     --print(img, " px", physminx, " py", physminy, " z", zprio, " br", brightness, " ", sx, " ", 1, " ang", angle)
-    render:add(textures[img], physminx, physminy, zprio, brightness, sx, 1, angle, frame)
+    render:add(type(img) == "string" and textures[img] or img, physminx, physminy, zprio, brightness, sx, 1, angle, frame)
 end
 
 function Portal()
@@ -241,10 +241,7 @@ function DefaultField(w,h)
         end
         
         for k,o in pairs(cell.objects) do
-            -- What frame do we draw
-            local frame = (global_frame + o.phase) % (textures[o.img].last) + 1
-            
-            drawTileInCell(xmin,ymin, o.cx - x - o.xrad, o.cy - y - o.yrad, o.cx - x + o.xrad, o.cy - y + o.yrad, o.img, downdir,rightdir, brightness, o.z, o.grav, o.mirrored, frame)
+            drawTileInCell(xmin,ymin, o.cx - x - o.xrad, o.cy - y - o.yrad, o.cx - x + o.xrad, o.cy - y + o.yrad, o.img, downdir,rightdir, brightness, o.z, o.grav, o.mirrored, o.frame)
         end
     end
     
@@ -412,27 +409,6 @@ function DefaultField(w,h)
     end
     
     function field:shade()
-        --local OFFSET = CELLSIZE + 40
-        --field:shadeCell(5,5,0*OFFSET,OFFSET,DOWN,RIGHT,255)
-        --field:shadeCell(5,5,1*OFFSET,OFFSET,RIGHT,UP,255)
-        --field:shadeCell(5,5,2*OFFSET,OFFSET,UP,LEFT,255)
-        --field:shadeCell(5,5,3*OFFSET,OFFSET,LEFT,DOWN,255)
-        --
-        --field:shadeCell(5,5,0*OFFSET,2*OFFSET,RIGHT,DOWN, 255)
-        --field:shadeCell(5,5,1*OFFSET,2*OFFSET,UP,   RIGHT,255)
-        --field:shadeCell(5,5,2*OFFSET,2*OFFSET,LEFT, UP,   255)
-        --field:shadeCell(5,5,3*OFFSET,2*OFFSET,DOWN, LEFT, 255)
-        
-        --drawTileInCell(CELLSIZE,  CELLSIZE,  0,  0,1,1,"NONE.png",DOWN, RIGHT, 255,1)
-        --drawTileInCell(2*CELLSIZE,CELLSIZE,  0,  0,1,1,"NONE.png",RIGHT,UP,    255,1)
-        --drawTileInCell(3*CELLSIZE,CELLSIZE,  0,  0,1,1,"NONE.png",UP,   LEFT,  255,1)
-        --drawTileInCell(4*CELLSIZE,CELLSIZE,  0,  0,1,1,"NONE.png",LEFT, DOWN,  255,1)
-        --
-        --drawTileInCell(CELLSIZE,  2*CELLSIZE,  0,  0,1,1,"NONE.png",RIGHT, DOWN, 255,1)
-        --drawTileInCell(2*CELLSIZE,2*CELLSIZE,  0,  0,1,1,"NONE.png",UP,    RIGHT,255,1)
-        --drawTileInCell(3*CELLSIZE,2*CELLSIZE,  0,  0,1,1,"NONE.png",LEFT,  UP,   255,1)
-        --drawTileInCell(4*CELLSIZE,2*CELLSIZE,  0,  0,1,1,"NONE.png",DOWN,  LEFT, 255,1)
-                
         self:collectObjects();
         
         local px = RESX / 2;

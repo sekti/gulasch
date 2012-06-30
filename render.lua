@@ -16,7 +16,6 @@ function render:add(obj, minx, miny, z, brightness, sx, sy, r, frame)
     if (obj.img) then
         obj = obj.img[frame]
     end
-    -- Bug: scales about center
     
     -- Scale images
     local sx = sx or 1.0

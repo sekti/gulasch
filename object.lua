@@ -1,5 +1,6 @@
 require 'field'
 require 'constants'
+require 'object_types'
 
 function object(cx, cy, xrad, yrad, img, z)
     local o = {}
@@ -12,7 +13,8 @@ function object(cx, cy, xrad, yrad, img, z)
     o.mirrored = false
     o.grav = DOWN
     o.img = img
-    o.phase = 10
+    o.phase = 1
+    o.frame = 1
     
     --Sekti: Objects should be able to maintain non-physical subobjects.
     --example:
@@ -38,9 +40,15 @@ function object(cx, cy, xrad, yrad, img, z)
         return sub
     end
     
-    function o:update() 
-        
-        return self 
+    function o:update(dt) 
+        -- What frame do we draw
+        if (type(self.img) == "string") then
+            --print("Update frame...")
+            
+            if (type(self.img) == "string") then
+                self.frame = (math.floor(global_time / ANIM_DT) + self.phase) % (textures[self.img].last) + 1
+            end
+        end
     end
     
     --function o:render()
@@ -58,8 +66,11 @@ function rigidbody(cx, cy, xrad, yrad, img, z, velx, vely, weight, grav)
     o.vely = vely or 0
     o.weight = weight or 1
     o.grav = grav or DOWN
+    o.old_update = o.update
     
     o.update = function(self, dt)
+        o:old_update()
+    
         local ax, ay = dirtodxy(o.grav)
         o.velx = o.velx + GRAV_STRENGTH * ax * dt
         o.vely = o.vely + GRAV_STRENGTH * ay * dt
@@ -167,49 +178,118 @@ end
 function makeplayer(cx, cy)
     local p = rigidbody(cx, cy, 0.25, 0.25, "player.png", 999, 0, 0, 2, DOWN);
     p.typ = "makeplayer"
+    p.dead = false
+    
+    p.kill = function()
+        if p.dead then return end
+        p.dead = true
+        p.timeOfDeath = global_time
+        p.img = nil
+    end
+    
+    p.revive = function()
+        p.dead = false
+        p.img = "player.png"
+        p.timeOfDeath = nil
+    end
     
     p.onfloor = true
-    --p.cx, p.cy = 2.5, 2.5
-    --p.xrad, p.yrad = 0.25, 0.25
-    --p.velx, p.vely = 0,0
-    --p.weight = 2
-    --p.grav = DOWN
-    --p.z = 999
-    --p.img = "player.png"
     
-    --player eyes and mouth
-    
+    --player eyes and mouth and particle spawner
     p.Subobjects = function(self)
-        local pupils = p:placeSubobject(0, 0)
-        pupils.img = "pupils_centered.png"
-        local mouth = p:placeSubobject(0, 0)
+        local so = {}
         
-        local dx, dy = 0, 0
-        local downx, downy = dirtodxy(p.grav)
-        
-        fact = math.sqrt(p.velx*p.velx + p.vely*p.vely)
-        if (math.abs(fact) > 0.0001) then
-            dx   = 0.025 * p.velx / fact
-            dy   = 0.025 * p.vely / fact
+        if p.dead then
+            if not p.spawner then
+                p.spawner = {}
+                for i = 1,16 do
+                    p.spawner[i] = gr.newParticleSystem(textures["blood.png"].img[1], 999999)
+                             
+                    p.spawner[i]:setParticleLife(0.4,0.6)
+                    p.spawner[i]:setSizes(1, 2, 0)
+                    p.spawner[i]:setRadialAcceleration(100,500)
+                    p.spawner[i]:setTangentialAcceleration(100,400)
+                    --p.spawn[i]er:setSizeVariation(1)
+                    p.spawner[i]:setSpread(2*math.pi)
+                    p.spawner[i]:setSpeed(10,100)
+                    p.spawner[i]:setSpin(0,2*math.pi,1)
+                    p.spawner[i]:start()
+                    p.spawner[i]:setEmissionRate(20)
+                    p.spawner[i]:update(0.1)
+                    p.spawner[i]:setEmissionRate(0)
+                end
+                    
+                p.diff = {}
+                for i, o in ipairs(p.spawner) do
+                    p.diff[#p.diff + 1] = {math.random(), math.random(), math.floor(math.random(1, 5))}
+                end
+            end
             
-            pupils.cx, pupils.cy = pupils.cx + dx, pupils.cy + dy
-        end
-        
-        if (p.onfloor or (dx == 0 and dy == 0)) then
-            mouth.img = "mouth_standing.png"
-        elseif (downx ~= 0 and downx * dx > 0) or (downy * dy > 0) then
-            mouth.img = "mouth_worried.png"
+            if (global_time - p.timeOfDeath) > 0.2 then
+                for i, s in ipairs(p.spawner) do
+                    s:setEmissionRate(0)
+                end
+            end
+            
+            for i, s in ipairs(p.spawner) do
+                s:update(dt)
+            end
+            
+            
+            for i, s in ipairs(p.spawner) do
+                local spawnerObject = p:placeSubobject(p.diff[i][1] * 2* p.xrad, p.diff[i][2] * 2* p.yrad + (global_time - p.timeOfDeath)*(global_time - p.timeOfDeath)*2 )
+                    
+                spawnerObject.img = p.spawner[i]
+                --spawnerObject.grav = DIRS[p.diff[i][3]]
+                so[#so+1] = spawnerObject
+            end
+            --
+            --
+            --for x = 0,3 do
+            --    for y = 0,3 do
+            --        local spawnerObject = p:placeSubobject(x * 2 * p.xrad / 3, y * 2 * p.yrad / 3)
+            --        
+            --        spawnerObject.img = p.spawner
+            --        so[#so+1] = spawnerObject
+            --    end
+            --end
+            
         else
-            mouth.img = "mouth_excited.png"
-        end
+            p.spawner = nil
+        
+            local pupils = p:placeSubobject(0, 0)
+            pupils.img = "pupils_centered.png"
+            local mouth = p:placeSubobject(0, 0)
             
-        return {pupils, mouth}
+            local dx, dy = 0, 0
+            local downx, downy = dirtodxy(p.grav)
+            
+            fact = math.sqrt(p.velx*p.velx + p.vely*p.vely)
+            if (math.abs(fact) > 0.0001) then
+                dx   = 0.025 * p.velx / fact
+                dy   = 0.025 * p.vely / fact
+                
+                pupils.cx, pupils.cy = pupils.cx + dx, pupils.cy + dy
+            end
+            
+            if (p.onfloor or (dx == 0 and dy == 0)) then
+                mouth.img = "mouth_standing.png"
+            elseif (downx ~= 0 and downx * dx > 0) or (downy * dy > 0) then
+                mouth.img = "mouth_worried.png"
+            else
+                mouth.img = "mouth_excited.png"
+            end
+            
+            so[#so+1] = mouth
+            so[#so+1] = pupils
+        end
+        
+        return so
     end
     
     -- TODO: KEY TO GRAB CRATE
     function p:move(dt)
-        --print("Move: ", self.cx, self.cy)
-        
+        if p.dead then return end
         
         -- ugly cases
         local x_air = 0
@@ -356,7 +436,14 @@ function collide1(r1, r2)
 --        if intx1 ~= intx2 or inty1 ~= inty2 then return end
     
         if (math.abs(r1.cx - r2.cx) <= r1.xrad + r2.xrad and math.abs(r1.cy - r2.cy) <= r1.yrad + r2.yrad) then
-
+            -- objects do collide
+            if (r2.on_collide) then
+                r2.on_collide(r1)
+            end
+            if (r1.on_collide) then
+                r1.on_collide(r2)
+            end
+        
             local xoffset = math.abs(r1.cx - r2.cx) - (r1.xrad + r2.xrad) -- is negative
             local yoffset = math.abs(r1.cy - r2.cy) - (r1.yrad + r2.yrad) -- is negative
             

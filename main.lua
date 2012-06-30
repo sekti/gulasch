@@ -7,6 +7,7 @@ require 'object'
 require 'editor'
 require 'text'
 require 'archiver'
+require 'object_types'
 
 RESX=1024
 RESY=768
@@ -17,6 +18,7 @@ MODE = {
 }
 
 -- Global frame counter
+global_time = 1
 global_frame = 1
 frame_accum = 0
 ANIM_DT = 0.01
@@ -27,6 +29,7 @@ function love.load()
     -- print("Test")
     assert(gr.setMode(RESX, RESY, false, false), "Could not set screen mode")
 
+    initObjects()
     textures:init()
     editor:init()
     text:init()
@@ -78,17 +81,17 @@ function love.update(dt_local)
     end
     
     if (dt > 0.05) then dt = 0.05 end
-
-    frame_accum = frame_accum + dt
-    if (frame_accum > ANIM_DT) then
-        global_frame = global_frame + math.floor(frame_accum / ANIM_DT)
-        frame_accum = frame_accum % ANIM_DT
-    end
+    
+    global_time = global_time + dt
+    
+    
     
     if mode == MODE.RENDER then
         player:move(dt)
 
-        objects = map(objects, function(o) return o:update(dt) end)
+        for i, o in ipairs(objects) do
+            o:update(dt)
+        end
         
 --        for i1,v1 in pairs(objects) do
 --            for i2,v2 in pairs(objects) do

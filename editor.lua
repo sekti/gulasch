@@ -10,11 +10,6 @@ editor = {
     half_open = nil,
     level_list = {},
     level_idx = 1,
-    
-    object_types = {function() return rigidbody(0, 0, 0.125, 0.125, "crate.png", 50, 0, 0, 1, DOWN) end,
-                    function() return rigidbody(0, 0, 0.125, 0.125, "crate_move.png", 50, 0, 0, 1, DOWN) end,
-                    function() return rigidbody(0, 0, 0.25, 0.25, "sawblade.png", 50, 0, 0, 1, DOWN) end}, 
-    object_names = {"crate.png", "crate_move.png", "sawblade.png"},
     wall = LEFT
 } 
 
@@ -193,8 +188,8 @@ function editor:keyboard(key)
         if (o and o ~= player) then
             -- Hack
             -- Change object type
-            local cur = table.find(self.object_names, o.img)
-            local next = self.object_types[cur % #self.object_types + 1]()
+            local cur = table.find(object_names, o.typ)
+            local next = object_types[cur % #object_types + 1]()
             next.cx = o.cx
             next.cy = o.cy
             
@@ -208,7 +203,7 @@ function editor:keyboard(key)
     elseif (key == self.keys.PLACE) then
         -- Place object
         local mx, my = self:mouseToField(mouse.getX(), mouse.getY())
-        objects[#objects + 1] = self.object_types[1]()
+        objects[#objects + 1] = object_types[1]()
         objects[#objects].cx = mx
         objects[#objects].cy = my
     elseif (key == self.keys.REMOVE) then

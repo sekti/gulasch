@@ -62,10 +62,10 @@ makeplayer
     img string player.png
     velx number 0
     grav number -1
-    frame number 1
+    cy number 1.4375
     cx number 2.5859375
     mirrored boolean false
-    cy number 1.4375
+    frame number 1
     onfloor boolean true
     weight number 2
     phase number 10
@@ -77,9 +77,26 @@ makeplayer
     rigid boolean true
 END_OF_OBJECT
 rigidbody
+    img string crate.png
+    weight number 1
+    grav number -1
+    yrad number 0.125
+    typ string rigidbody
+    cy number 2.5934375
+    xrad number 0.125
+    cx number 3.46875
+    velx number 0
+    vely number 0
+    z number 50
+    rigid boolean true
+    frame number 1
+    phase number 10
+    mirrored boolean false
+END_OF_OBJECT
+SawBlade
     img string sawblade.png
-    cy number 1.5703125
-    cx number 1.78125
+    cy number 1.7421875
+    cx number 1.9296875
     grav number -1
     mirrored boolean false
     weight number 1
@@ -90,23 +107,6 @@ rigidbody
     xrad number 0.25
     yrad number 0.25
     phase number 10
-    typ string rigidbody
-END_OF_OBJECT
-rigidbody
-    img string crate.png
-    weight number 1
-    grav number -1
-    frame number 149
-    typ string rigidbody
-    velx number 0
-    cx number 3.46875
-    xrad number 0.125
-    cy number 2.5934375
-    vely number 0
-    z number 50
-    rigid boolean true
-    yrad number 0.125
-    phase number 10
-    mirrored boolean false
+    typ string SawBlade
 END_OF_OBJECT
 END_OF_MAP
